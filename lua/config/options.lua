@@ -14,6 +14,13 @@ end
 -- Hide the tabline (tab bar) to reclaim vertical space for code.
 vim.o.showtabline = 0
 
+-- Keep the cursor line vertically centered instead of LazyVim's default
+-- 4-line margin. Vim clamps scrolloff to half the window height on its own,
+-- so a huge value just means "always centered". Paired with scrollEOF.nvim
+-- (lua/plugins/scroll-eof.lua) so this also holds up near the end of the
+-- buffer, where vim otherwise refuses to scroll further.
+vim.o.scrolloff = 999
+
 -- Make :terminal open PowerShell instead of cmd.exe, so the profile
 -- (Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1, e.g. the
 -- vsdev function that loads the MSVC dev environment) is available inside
