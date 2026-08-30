@@ -6,13 +6,23 @@
 -- when nvim starts outside an interactive shell (WSL launcher, desktop shortcut).
 -- Jobs nvim spawns inherit vim.env.PATH, so without this the claude CLI, LSP
 -- servers and formatters installed there are invisible to jobstart().
-local local_bin = vim.fn.expand("~/.local/bin")
-if not string.find(":" .. vim.env.PATH .. ":", ":" .. local_bin .. ":", 1, true) then
-  vim.env.PATH = local_bin .. ":" .. vim.env.PATH
+-- Unix only: on Windows the ":" separator here corrupts %PATH% (which uses ";"),
+-- turning C:\Windows\System32 into a broken entry and hiding curl/tar/etc.
+if vim.fn.has("win32") == 0 then
+  local local_bin = vim.fn.expand("~/.local/bin")
+  if not string.find(":" .. vim.env.PATH .. ":", ":" .. local_bin .. ":", 1, true) then
+    vim.env.PATH = local_bin .. ":" .. vim.env.PATH
+  end
 end
 
 -- Hide the tabline (tab bar) to reclaim vertical space for code.
 vim.o.showtabline = 0
+
+-- Perl and Ruby host providers are unused here; disabling them silences the
+-- optional :checkhealth warnings. Node and Python providers stay enabled
+-- (pynvim / npm "neovim" package are installed).
+vim.g.loaded_perl_provider = 0
+vim.g.loaded_ruby_provider = 0
 
 -- Make :terminal open PowerShell instead of cmd.exe, so the profile
 -- (Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1, e.g. the
