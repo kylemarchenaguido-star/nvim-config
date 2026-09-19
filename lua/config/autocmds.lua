@@ -109,3 +109,17 @@ vim.api.nvim_create_autocmd("User", {
     }):map("<leader>uW")
   end,
 })
+
+
+-- Every filetype's ftplugin sets 'formatoptions' with `r`/`o`, which is why
+-- hitting <Enter> after (or pressing `o`/`O` on) a `//`/`#`/etc. comment line
+-- auto-inserts the same comment leader on the next line. Strip them back out
+-- on every FileType event -- this fires after the language ftplugin has
+-- already set them, so it wins regardless of language (cpp, python, lua...).
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "*",
+  group = vim.api.nvim_create_augroup("no_auto_comment_leader", { clear = true }),
+  callback = function()
+    vim.opt_local.formatoptions:remove({ "r", "o" })
+  end,
+})
