@@ -42,8 +42,40 @@ link_pages() {
     ln -sf "$f" "$MAN_HOME/man3/$(basename "$f")"
     n=$((n + 1))
   done
+  # cppreference documents typedefs under the class they alias, so `man
+  # std::string` finds nothing. Point the everyday names at the real pages.
+  a=0
+  while read -r alias target; do
+    [ -e "$CACHE/$target.3.gz" ] || continue
+    ln -sf "$CACHE/$target.3.gz" "$MAN_HOME/man3/$alias.3.gz"
+    a=$((a + 1))
+  done <<'EOF'
+std::string std::basic_string
+std::wstring std::basic_string
+std::u8string std::basic_string
+std::u16string std::basic_string
+std::u32string std::basic_string
+std::string_view std::basic_string_view
+std::wstring_view std::basic_string_view
+std::u8string_view std::basic_string_view
+std::u16string_view std::basic_string_view
+std::u32string_view std::basic_string_view
+std::istream std::basic_istream
+std::ostream std::basic_ostream
+std::iostream std::basic_iostream
+std::ios std::basic_ios
+std::ifstream std::basic_ifstream
+std::ofstream std::basic_ofstream
+std::fstream std::basic_fstream
+std::istringstream std::basic_istringstream
+std::ostringstream std::basic_ostringstream
+std::stringstream std::basic_stringstream
+std::regex std::basic_regex
+std::smatch std::match_results
+std::cmatch std::match_results
+EOF
   mandb -q --user-db 2>/dev/null || true
-  echo "linked $n cppman pages into $MAN_HOME/man3"
+  echo "linked $n cppman pages (+$a typedef aliases like std::string) into $MAN_HOME/man3"
 }
 
 case "${1:-all}" in
