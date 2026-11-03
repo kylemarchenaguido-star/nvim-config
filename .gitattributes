@@ -1,0 +1,2 @@
+# scripts run under bash/WSL: keep LF even though Windows checks out CRLF
+*.sh text eol=lf

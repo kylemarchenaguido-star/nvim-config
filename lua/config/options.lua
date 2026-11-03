@@ -70,4 +70,7 @@ if vim.fn.has("win32") == 1 then
   vim.o.shellpipe = "2>&1 | Out-File -Encoding UTF8 %s; exit $LastExitCode"
   vim.o.shellquote = ""
   vim.o.shellxquote = ""
+
+  -- :Man / K / man picker via the man pages installed in WSL
+  require("config.winman")
 end
