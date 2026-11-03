@@ -12,8 +12,11 @@ end
 local bin_dir = vim.fn.stdpath("data") .. "\\bin"
 local exe = bin_dir .. "\\man.exe"
 
-if vim.fn.executable(exe) == 0 then
-  local src = vim.fn.stdpath("config") .. "\\scripts\\man-wsl\\man.c"
+local src = vim.fn.stdpath("config") .. "\\scripts\\man-wsl\\man.c"
+-- (re)build when missing, or when man.c has changed since the last build
+local stale = vim.fn.executable(exe) == 0 or vim.fn.getftime(src) > vim.fn.getftime(exe)
+
+if stale then
   if vim.fn.executable("gcc") == 1 and vim.fn.filereadable(src) == 1 then
     vim.fn.mkdir(bin_dir, "p")
     vim.fn.system({ "gcc", "-O2", "-o", exe, src })
@@ -26,4 +29,17 @@ if vim.fn.executable(exe) == 1 then
   -- forwards variables named in WSLENV.
   local wslenv = (vim.env.WSLENV or ""):gsub(":+$", "")
   vim.env.WSLENV = (wslenv ~= "" and (wslenv .. ":") or "") .. "MANPAGER:MANWIDTH"
+
+  -- man.exe caches lookups/renders for 3 days (see man.c). Pages that already
+  -- exist never change, so that is safe; this clears it if you ever need to.
+  vim.api.nvim_create_user_command("ManCacheClear", function()
+    local dir = vim.fn.stdpath("data") .. "\\man-cache"
+    local n = 0
+    for _, f in ipairs(vim.fn.glob(dir .. "\\*", false, true)) do
+      if vim.fn.delete(f) == 0 then
+        n = n + 1
+      end
+    end
+    vim.notify(("man cache cleared (%d entries)"):format(n))
+  end, { desc = "Clear the Windows man.exe lookup cache" })
 end
